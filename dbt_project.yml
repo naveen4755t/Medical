@@ -36,8 +36,11 @@ clean-targets:         # directories to be removed by `dbt clean`
 # using the `{{ config(...) }}` macro.
 
 models:
-  healthcare_dbt:
+  my_new_project:   # <-- must match `name:` exactly
     staging:
+      +schema: staging
       +materialized: view
+
     marts:
+      +schema: analytics
       +materialized: table
