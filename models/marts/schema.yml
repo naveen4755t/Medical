@@ -1,0 +1,164 @@
+version: 2
+
+models:
+
+  - name: dim_patients
+    description: "Patient dimension table used for analytics and reporting"
+    columns:
+      - name: patient_id
+        description: "Unique identifier for each patient"
+        tests:
+          - not_null
+          - unique
+
+      - name: patient_name
+        description: "Full name of the patient"
+
+      - name: gender
+        description: "Gender of the patient"
+
+      - name: age
+        description: "Age of the patient"
+
+      - name: city
+        description: "City of residence"
+
+      - name: insurance_type
+        description: "Insurance category associated with the patient"
+
+
+  - name: dim_departments
+    description: "Hospital department dimension with aggregated doctor count"
+    columns:
+      - name: department_id
+        description: "Unique department identifier"
+        tests:
+          - not_null
+          - unique
+
+      - name: department_name
+        description: "Name of the department"
+
+      - name: hospital_branch
+        description: "Hospital branch location"
+
+      - name: total_doctors
+        description: "Number of doctors assigned to the department"
+
+
+  - name: dim_doctors
+    description: "Doctor dimension enriched with department details"
+    columns:
+      - name: doctor_id
+        description: "Unique doctor identifier"
+        tests:
+          - not_null
+          - unique
+
+      - name: doctor_name
+        description: "Doctor full name"
+
+      - name: specialization
+        description: "Medical specialization of the doctor"
+
+      - name: experience_years
+        description: "Years of professional experience"
+
+      - name: department_id
+        description: "Department the doctor belongs to"
+        tests:
+          - relationships:
+              to: ref('dim_departments')
+              field: department_id
+
+      - name: department_name
+        description: "Name of the associated department"
+
+      - name: hospital_branch
+        description: "Hospital branch of the department"
+
+
+  - name: dim_treatments
+    description: "Treatment dimension including department ownership and cost"
+    columns:
+      - name: treatment_id
+        description: "Unique treatment identifier"
+        tests:
+          - not_null
+          - unique
+
+      - name: treatment_name
+        description: "Name of the treatment"
+
+      - name: category
+        description: "Treatment category"
+
+      - name: cost
+        description: "Standard cost of the treatment"
+
+      - name: department_id
+        description: "Department responsible for the treatment"
+        tests:
+          - relationships:
+              to: ref('dim_departments')
+              field: department_id
+
+      - name: department_name
+        description: "Department name"
+
+
+  - name: fact_patient_visits
+    description: "Fact table capturing patient visits enriched with patient, doctor, department, and treatment attributes"
+    columns:
+      - name: visit_id
+        description: "Unique identifier for each patient visit"
+        tests:
+          - not_null
+          - unique
+
+      - name: visit_date
+        description: "Date of the patient visit"
+
+      - name: patient_id
+        description: "Reference to patient dimension"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_patients')
+              field: patient_id
+
+      - name: doctor_id
+        description: "Reference to doctor dimension"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_doctors')
+              field: doctor_id
+
+      - name: department_id
+        description: "Reference to department dimension"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_departments')
+              field: department_id
+
+      - name: treatment_id
+        description: "Reference to treatment dimension"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_treatments')
+              field: treatment_id
+
+      - name: bill_amount
+        description: "Total billed amount for the visit"
+
+      - name: hospital_margin
+        description: "Difference between billed amount and treatment cost"
+
+      - name: payment_type
+        description: "Mode of payment used for the visit"
+
+      - name: visit_status
+        description: "Current status of the visit"

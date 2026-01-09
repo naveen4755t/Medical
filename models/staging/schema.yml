@@ -1,0 +1,159 @@
+version: 2
+
+models:
+
+  - name: stg_patients
+    description: "Cleaned patient master data loaded from RAW patients table"
+    columns:
+      - name: patient_id
+        description: "Unique identifier for each patient"
+        tests:
+          - not_null
+          - unique
+
+      - name: patient_name
+        description: "Full name of the patient"
+        tests:
+          - not_null
+
+      - name: gender
+        description: "Gender of the patient"
+
+      - name: age
+        description: "Age of the patient"
+
+      - name: city
+        description: "City where the patient resides"
+
+      - name: insurance_type
+        description: "Insurance type used by the patient"
+
+
+  - name: stg_departments
+    description: "Hospital department reference data"
+    columns:
+      - name: department_id
+        description: "Unique identifier for hospital department"
+        tests:
+          - not_null
+          - unique
+
+      - name: department_name
+        description: "Name of the hospital department"
+        tests:
+          - not_null
+
+      - name: hospital_branch
+        description: "Hospital branch where department operates"
+
+
+  - name: stg_doctors
+    description: "Doctor master data mapped to departments"
+    columns:
+      - name: doctor_id
+        description: "Unique identifier for doctor"
+        tests:
+          - not_null
+          - unique
+
+      - name: doctor_name
+        description: "Full name of the doctor"
+        tests:
+          - not_null
+
+      - name: specialization
+        description: "Doctor specialization"
+
+      - name: department_id
+        description: "Department ID the doctor belongs to"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_departments')
+              field: department_id
+
+      - name: experience_years
+        description: "Total years of professional experience"
+
+
+  - name: stg_treatments
+    description: "Treatment catalog with department mapping"
+    columns:
+      - name: treatment_id
+        description: "Unique identifier for treatment"
+        tests:
+          - not_null
+          - unique
+
+      - name: treatment_name
+        description: "Name of the medical treatment"
+        tests:
+          - not_null
+
+      - name: category
+        description: "Treatment category (Diagnostics, Surgery, Therapy, etc.)"
+
+      - name: department_id
+        description: "Department responsible for treatment"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_departments')
+              field: department_id
+
+      - name: cost
+        description: "Standard cost of the treatment"
+
+
+  - name: stg_visits
+    description: "Patient visit transactions captured from hospital systems"
+    columns:
+      - name: visit_id
+        description: "Unique identifier for patient visit"
+        tests:
+          - not_null
+          - unique
+
+      - name: visit_date
+        description: "Date of patient visit"
+
+      - name: patient_id
+        description: "Patient involved in the visit"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_patients')
+              field: patient_id
+
+      - name: doctor_id
+        description: "Doctor who handled the visit"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_doctors')
+              field: doctor_id
+
+      - name: department_id
+        description: "Department where visit occurred"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_departments')
+              field: department_id
+
+      - name: treatment_id
+        description: "Treatment administered during the visit"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_treatments')
+              field: treatment_id
+
+      - name: bill_amount
+        description: "Total billed amount for the visit"
+
+      - name: payment_type
+        description: "Mode of payment (Insurance, Self-Pay, Medicare)"
+
+      - name: visit_status
+        description: "Status of the visit (Completed, Cancelled, etc.)"
